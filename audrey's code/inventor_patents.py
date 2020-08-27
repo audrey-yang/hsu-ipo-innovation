@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Inventor to Patents and Citation
+Inventor + Year to Patents
+
+This script links inventors to their patents and those patents' citations.
+
+The files produced are outputs/inventor_year_patents_bk.csv and 
+outputs/inventor_year_patents_fw.csv, with header:
+    inventor_id, year, patent_id, citation_id, subsection_id
 
 @author: Audrey Yang (auyang@seas.upenn.edu)
 """
@@ -11,17 +17,6 @@ import csv
 
 print('***\nBEGIN PROCESS')
 start_time = time.ctime()
-
-# Load patent_assignee
-patent_assignee_file = open('../patent_data/patent_assignee.tsv', 
-                            encoding='utf-8-sig')
-patent_assignee = csv.DictReader(patent_assignee_file, delimiter='\t')
-
-# Create patent to assignee dictionary
-print('Creating patent to assignee dict\n...')
-patent_to_assignee = {}
-for row in patent_assignee:
-    patent_to_assignee[row['patent_id']] = row['assignee_id']
 
 # Load cpc_current
 cpc_current_file = open('../patent_data/cpc_current.tsv', 
@@ -78,52 +73,40 @@ inventor_to_patent_file = open('../outputs/inventor_patent.csv',
 inventor_to_patent = csv.DictReader(inventor_to_patent_file)
 
 # Write to output file
-print('Creating output file \n...')
-with open('../outputs/inventor_year_patents.csv', 'w', 
-              newline="\n", encoding='utf-8-sig') as output_file:
-    output = csv.writer(output_file, delimiter=',')
-    header = ['inventor_id', 
-              'assignee_patent', 
-              'patent_id', 
-              'date_patent',
-              'assignee_citation',
-              'citation_id', 
-              'date_citation', 
-              'subsection_id', 
-              'citation_type',
-              ]
-    output.writerow(header)   
+print('Creating output files\n...')
+with open(
+        '../outputs/inventor_year_patents_bk.csv', 'w', newline="\n", encoding='utf-8-sig'
+        ) as output_bk_file, open(
+        '../outputs/inventor_year_patents_fw.csv', 'w', newline="\n", encoding='utf-8-sig'
+        ) as output_fw_file:
+    output_bk = csv.writer(output_bk_file, delimiter=',')
+    output_fw = csv.writer(output_fw_file, delimiter=',')
+    header = ['inventor_id', 'year', 'patent_id', 'citation_id', 'subsection_id']
+    output_bk.writerow(header)   
+    output_fw.writerow(header)   
 
     for row in inventor_to_patent:
-        # Writing backward citation (citation_type = 0)
+        # Writing backward citations
         patent = row['patent_id']
         for cit in patent_to_citationbk.get(patent, []):
-            output.writerow([
-                    row['inventor_id'], 
-                    row['assignee_id'],
-                    patent,
-                    patent_to_year.get(patent, 'N/A'),
-                    patent_to_assignee.get(cit, 'N/A'),
-                    cit,
-                    patent_to_year.get(cit, 'N/A'),
-                    'Design' if cit[0] == 'D' else (
-                            patent_to_subsection.get(cit, 'N/A')),
-                    0
-                ]) 
-        
-        # Writing forward citation (citation_type = 1)
-        for cit in patent_to_citationfw.get(patent, []):
-            output.writerow([
+            output_bk.writerow([
                 row['inventor_id'], 
-                row['assignee_id'],
-                patent,
                 patent_to_year.get(patent, 'N/A'),
-                patent_to_assignee.get(cit, 'N/A'),
+                patent,
                 cit,
-                patent_to_year.get(cit, 'N/A'),
                 'Design' if cit[0] == 'D' else (
-                            patent_to_subsection.get(cit, 'N/A')),
-                1
+                        patent_to_subsection.get(cit, 'N/A')),
+            ]) 
+        
+        # Writing forward citations
+        for cit in patent_to_citationfw.get(patent, []):
+            output_fw.writerow([
+                row['inventor_id'], 
+                patent_to_year.get(patent, 'N/A'),
+                patent,
+                cit,
+                'Design' if cit[0] == 'D' else (
+                        patent_to_subsection.get(cit, 'N/A')),
             ]) 
     
 print('***\nEND OF PROCESS')

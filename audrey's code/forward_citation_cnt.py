@@ -3,6 +3,13 @@
 """
 Foward Citation Count
 
+This script counts the forward citations per patent for 4 different year 
+ranges. The year ranges are 4, 5, 6, and 7 years after the publication year 
+of the patent.
+
+Ths file produced is outputs/forward_citation_cnt.csv, which has the header:
+    ipo_firm, year, forward_cnt4, forward_cnt5, forward_cnt6, forward_cnt7.
+
 @author: Audrey Yang (auyang@seas.upenn.edu)
 """
 
@@ -11,7 +18,6 @@ import csv
 
 print('***\nBEGIN PROCESS')
 start_time = time.ctime()
-
 
 # Load in citations_forward_backward.csv
 citations_file = open('../outputs/citations_forward_backward.csv', 

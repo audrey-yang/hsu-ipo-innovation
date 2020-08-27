@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Patent Originality and Generality
+Patent Originality and Generality By Firm
+
+This script uses citation_forward_backward to get the the number of citations
+per subsection. It then generates the Herfindahl measures for originality and
+generality for each patent.
+
+The file produced is outputs/originality_generality.csv, with header:
+    ipo_firm, year, patent_id, originality, generality.
+
+*Note: only sequence 0 subsections are counted and N/A subsections are ignored 
 
 @author: Audrey Yang (auyang@seas.upenn.edu)
 """
@@ -41,8 +50,8 @@ for row in citations:
 firm_year_patentcnt_file = open('../outputs/firm_year_patentcnt.csv', 
                             encoding='utf-8-sig')
 firm_year_patentcnt = csv.DictReader(firm_year_patentcnt_file, delimiter=',')
-       
-print('Creating output file\n...')
+  
+# Creating output file     
 with open('../outputs/originality_generality.csv', 'w', 
               newline="\n", encoding='utf-8-sig') as output_file:
     output = csv.writer(output_file, delimiter=',')

@@ -3,6 +3,14 @@
 """
 Firm and Year to Inventor
 
+This script links firm + year to their patents and patents' inventors and 
+details, including name, gender, and locations.
+
+The file produced is outputs/inventor_patent.csv, which has the header:
+    ipo_firm, year, inventor_id, patent_id, assignee_id, 
+    name_last, name_first, gender, city, 
+    state, country, latitude, longitude.
+
 @author: Audrey Yang (auyang@seas.upenn.edu)
 """
 
