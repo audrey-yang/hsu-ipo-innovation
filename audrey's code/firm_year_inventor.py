@@ -6,10 +6,12 @@ Firm and Year to Inventor
 This script links firm + year to their patents and patents' inventors and 
 details, including name, gender, and locations.
 
-The file produced is outputs/inventor_patent.csv, which has the header:
+The files produced are outputs/firm_year_inventor.csv, which has the header:
     ipo_firm, year, inventor_id, patent_id, assignee_id, 
     name_last, name_first, gender, city, 
-    state, country, latitude, longitude.
+    state, country, latitude, longitude,
+and outputs/inventor_patents, which has the header:
+    inventor_id, patent_id, assignee_id
 
 @author: Audrey Yang (auyang@seas.upenn.edu)
 """
@@ -152,7 +154,7 @@ print('Creating output file 2 (inventor_patent)\n...')
 with open('../outputs/inventor_patent.csv', 'w', 
               newline="\n", encoding='utf-8-sig') as output_file2:
     output2 = csv.writer(output_file2, delimiter=',')
-    header = ['inventor_id', 'patent_id', 'assignee_id'] # 'at_latest_firm'
+    header = ['inventor_id', 'patent_id', 'assignee_id']
     output2.writerow(header)
     
     print('Writing to output file\n...')

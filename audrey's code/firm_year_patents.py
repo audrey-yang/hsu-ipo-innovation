@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Backward and Forwards Citations
+Firm + Year to Patents
 
-This script aggregates all backward and forward citations for each patent in
-firm_year_patentcnt.
+This script aggregates all backward and forward citations for each patent 
+and firm in firm_year_patentcnt.
 
 The file produced is outputs/citations_forward_backward.csv, with header:
-    ipo_firm, assignee_patent, patent_id, date_patent, 
-    assignee_citation, citation_id, date_citation, subsection_id, group_id, 
-    sequence, citation_type.
+    ipo_firm, assignee_patent, patent_id, date_patent, assignee_citation,
+    citation_id, date_citation, subsection_id, group_id, sequence, citation_type
     
 *Note: citation_type is 0 for backward citations and 1 for forward citations
 
@@ -89,7 +88,7 @@ firm_year_patentcnt_file = open('../outputs/firm_year_patentcnt.csv',
 firm_year_patentcnt = csv.DictReader(firm_year_patentcnt_file, delimiter=',')
 
 # Write to output file
-with open('../outputs/citations_forward_backward.csv', 'w', 
+with open('../outputs/firm_year_patents.csv', 'w', 
               newline="\n", encoding='utf-8-sig') as output_file:
     output = csv.writer(output_file, delimiter=',')
     header = ['ipo_firm', 

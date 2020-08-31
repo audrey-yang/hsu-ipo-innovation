@@ -75,15 +75,18 @@ inventor_to_patent = csv.DictReader(inventor_to_patent_file)
 # Write to output file
 print('Creating output files\n...')
 with open(
-        '../outputs/inventor_year_patents_bk.csv', 'w', newline="\n", encoding='utf-8-sig'
-        ) as output_bk_file, open(
-        '../outputs/inventor_year_patents_fw.csv', 'w', newline="\n", encoding='utf-8-sig'
-        ) as output_fw_file:
+        '../outputs/inventor_year_patents_bk.csv', 'w', newline="\n", 
+        encoding='utf-8-sig') as output_bk_file, open(
+        '../outputs/inventor_year_patents_fw.csv', 'w', newline="\n", 
+        encoding='utf-8-sig') as output_fw_file:
     output_bk = csv.writer(output_bk_file, delimiter=',')
     output_fw = csv.writer(output_fw_file, delimiter=',')
-    header = ['inventor_id', 'year', 'patent_id', 'citation_id', 'subsection_id']
-    output_bk.writerow(header)   
-    output_fw.writerow(header)   
+    header_bk = ['inventor_id', 'year', 'patent_id', 'citation_id', 
+              'subsection_id']
+    output_bk.writerow(header_bk)   
+    header_fw = ['inventor_id', 'year', 'patent_id', 'citation_id', 
+                 'citation_year', 'subsection_id']
+    output_fw.writerow(header_fw)   
 
     for row in inventor_to_patent:
         # Writing backward citations
@@ -105,6 +108,7 @@ with open(
                 patent_to_year.get(patent, 'N/A'),
                 patent,
                 cit,
+                patent_to_year.get(cit, 'N/A'),
                 'Design' if cit[0] == 'D' else (
                         patent_to_subsection.get(cit, 'N/A')),
             ]) 
