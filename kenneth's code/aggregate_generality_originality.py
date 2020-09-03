@@ -23,27 +23,50 @@ print('READING FILES\n')
 og_file = open('dependent_data/firm_originality_generality.csv', encoding='utf-8-sig')
 og = csv.DictReader(og_file, delimiter=",")
 
-# load in the firm year patent file
+# load in the firm year patent count file
 firm_year_patentcnt_file = open('dependent_data/firm_year_patentcnt.csv', encoding='utf-8-sig')
 firm_year_patentcnt = csv.DictReader(firm_year_patentcnt_file, delimiter=",")
+
+# load in the firm year forward citation file
+firm_year_forward_cite_file = open('dependent_data/firm_forward_citation_cnt.csv', encoding='utf-8-sig')
+firm_year_forward_cite = csv.DictReader(firm_year_forward_cite_file, delimiter=",")
 
 # create an output file (firm year patent cnt)
 output = open('outputs/firm_year_innovation.csv', 'w', newline="\n", encoding='utf-8-sig')
 firm_year_innovation = csv.writer(output, delimiter=',')
-header = ['ipo_firm', 'year', 'originality', 'generality4', 'generality5', 'generality7']
+header = ['ipo_firm', 'year', 'originality', 'generality4', 'generality5', 'generality7', 'patent_cnt', 'patent_ids', 'forward_cnt4', 'forward_cnt5', 'forward_cnt7']
 firm_year_innovation.writerow(header)
 
 # create a dictionary of ipo_firms (firm, year) -> 
 # (o_sum, g4_sum, g5_sum, g7_sum, o_cnt, g4_cnt, g5_cnt, g7_cnt)
 innovation_dict = {}
 
+firm_year_patentcnt_dict = {}
 # find all the potential firm years
-print('CALCULATING ALL POTENTIAL FIRM YEAR\n')
+print('CALCULATING ALL POTENTIAL FIRM YEAR PATENT CNTS\n')
 for row in firm_year_patentcnt:
 	firm = row['ipo_firm']
 	year = row['year']
+	patent_cnt = row['patent_cnt']
+	patent_ids = row['patent_ids']
 	firm_year = (firm, year)
+
+	firm_year_patentcnt_dict[firm_year] = (patent_cnt, patent_ids)
+
 	innovation_dict[firm_year] = (0, 0, 0, 0, 0, 0, 0, 0)
+
+firm_year_forward_cite_dict = {}
+# get the weighted forward citation counts by firm year
+print('CALCULATING ALL POTENTIAL FIRM YEAR FORWARD CITATIONS\n')
+for row in firm_year_forward_cite:
+	firm = row['ipo_firm']
+	year = row['year']
+	forward_cnt4 = row['forward_cnt4']
+	forward_cnt5 = row['forward_cnt5']
+	forward_cnt7 = row['forward_cnt7']
+	firm_year = (firm, year)
+
+	firm_year_forward_cite_dict[firm_year] = (forward_cnt4, forward_cnt5, forward_cnt7)
 
 print('AGGREGATING ORIGINALITY AND GENERALITY SCORES\n')
 for row in og:
@@ -99,7 +122,14 @@ for key, value in innovation_dict.items():
 	else:
 		g7_avg = 0
 
-	firm_year_innovation.writerow([firm, year, o_avg, g4_avg, g5_avg, g7_avg])
+	if key in firm_year_forward_cite_dict:
+		fc4, fc5, fc7 = firm_year_forward_cite_dict[key]
+	else:
+		fc4, fc5, fc7 = (0,0,0)
+
+	patent_cnt, patent_ids = firm_year_patentcnt_dict[key]
+
+	firm_year_innovation.writerow([firm, year, o_avg, g4_avg, g5_avg, g7_avg, patent_cnt, patent_ids, fc4, fc5, fc7])
 
 
 # END OF PROCESS ##
