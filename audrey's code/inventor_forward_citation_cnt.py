@@ -8,7 +8,7 @@ ranges. The year ranges are 4, 5, and 7 years after the publication year
 of the patent.
 
 Ths file produced is outputs/inventor_forward_citation_cnt.csv, which has the header:
-    ipo_firm, year, forward_cnt4, forward_cnt5, forward_cnt7.
+    inventor, year, forward_cnt4, forward_cnt5, forward_cnt7.
 
 @author: Audrey Yang (auyang@seas.upenn.edu)
 """
@@ -23,6 +23,8 @@ start_time = time.ctime()
 citations_file = open('../outputs/inventor_year_patents_fw.csv', 
                       encoding='utf-8-sig')
 citations = csv.DictReader(citations_file, delimiter=',')
+
+this_year = 2020
 
 # Create output file
 print('WRITING TO FILE\n...')
@@ -45,13 +47,38 @@ with open('../outputs/inventor_forward_citation_cnt.csv', 'w',
                 row['inventor_id'] == last_inventor):
             # Write to file
             if last_year:
-                output.writerow([
-                        last_inventor, 
-                        last_year, 
-                        count4, 
-                        count5,
-                        count7
-                    ])
+                if last_year > this_year - 4: 
+                    output.writerow([
+                            last_inventor, 
+                            last_year, 
+                            'N/A',
+                            'N/A',
+                            'N/A'
+                        ])
+                elif last_year > this_year - 5: 
+                    output.writerow([
+                            last_inventor, 
+                            last_year, 
+                            count4,
+                            'N/A',
+                            'N/A'
+                        ])
+                elif last_year > this_year - 7:
+                    output.writerow([
+                            last_inventor, 
+                            last_year, 
+                            count4, 
+                            count5,
+                            'N/A'
+                        ])
+                else:
+                    output.writerow([
+                            last_inventor, 
+                            last_year, 
+                            count4, 
+                            count5,
+                            count7
+                        ])
 
             # Reset + update
             last_year = int(row['year'])

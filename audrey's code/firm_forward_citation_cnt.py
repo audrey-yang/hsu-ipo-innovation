@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+ #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Firm Foward Citation Count
@@ -19,10 +19,17 @@ import csv
 print('***\nBEGIN PROCESS')
 start_time = time.ctime()
 
+# Load in firm_year_patentcnt.csv
+firm_year_patent_file = open('../outputs/firm_year_patentcnt.csv', 
+                             encoding='utf-8-sig')
+firm_year_patents = csv.DictReader(firm_year_patent_file, delimiter=',')
+
 # Load in citations_forward_backward.csv
 citations_file = open('../outputs/firm_year_patents.csv', 
                       encoding='utf-8-sig')
 citations = csv.DictReader(citations_file, delimiter=',')
+
+this_year = 2020
 
 # Create output file
 print('WRITING TO FILE\n...')
@@ -34,49 +41,75 @@ with open('../outputs/firm_forward_citation_cnt.csv', 'w',
     output.writerow(header)
     
     # Keep track of current state 
-    last_year = 0
-    last_firm = ''
-    last_patent = ''
+    nxt = citations.__next__()
     count4, count5, count7 = 0, 0, 0
     
-    for row in citations:
-        if row['citation_type'] == '1':
-            if row['sequence'] == '0':                
-                if not (int(row['date_patent']) == last_year and 
-                        row['ipo_firm'] == last_firm):
-                    # Write to file
-                    if last_year:
-                        output.writerow([
-                                last_firm, 
-                                last_year, 
-                                count4, 
-                                count5,
-                                count7
-                            ])
+    # Iterate through firm_year_patentcnt
+    for row in firm_year_patents:
+        count4, count5, count7 = 0, 0, 0
+        firm = row['ipo_firm']
+        curr_year = int(row['year'])
+        if row['patent_cnt'] == '0' and curr_year < this_year - 7:
+            output.writerow([
+                    firm, 
+                    curr_year, 
+                    0,
+                    0,
+                    0
+                ])
+            continue
         
-                    # Reset + update
-                    last_year = int(row['date_patent'])
-                    last_firm = row['ipo_firm']
-                    count4, count5, count7 = 0, 0, 0
-                    
-                curr = int(row['date_citation'])
-                if curr - last_year <= 4:
-                    count4 += 1
-                if curr - last_year <= 5:
-                    count5 += 1
-                if curr - last_year <= 7:
-                    count7 += 1   
-    
-    # Write last thing            
-    if last_year:
-        output.writerow([
-                last_firm, 
-                last_year, 
-                count4, 
-                count5,
-                count7
-            ])
+        while int(nxt['date_patent']) == curr_year:
+            # Counting forward citations
+            if nxt['citation_type'] == '1':
+                if nxt['sequence'] == '0' or nxt['sequence'] == 'N/A':    
+                    cit_year = int(nxt['date_citation'])
+                    if cit_year - curr_year <= 4:
+                        count4 += 1
+                    if cit_year - curr_year <= 5:
+                        count5 += 1
+                    if cit_year - curr_year <= 7:
+                        count7 += 1   
+            
+            # Stop if we reach the end of the citations file
+            try:
+                nxt = citations.__next__()
+            except StopIteration:
+                break
         
+        if curr_year > this_year - 4: 
+            output.writerow([
+                    firm, 
+                    curr_year, 
+                    'N/A',
+                    'N/A',
+                    'N/A'
+                ])
+        elif curr_year > this_year - 5: 
+            output.writerow([
+                    firm, 
+                    curr_year, 
+                    count4,
+                    'N/A',
+                    'N/A'
+                ])
+        elif curr_year > this_year - 7:
+            output.writerow([
+                    firm, 
+                    curr_year, 
+                    count4, 
+                    count5,
+                    'N/A'
+                ])
+        else:
+            output.writerow([
+                    firm, 
+                    curr_year, 
+                    count4, 
+                    count5,
+                    count7
+                ])
+
 print('***\nEND OF PROCESS')
 end_time = time.ctime()
 
