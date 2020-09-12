@@ -87,10 +87,10 @@ for row in location_inventor:
         inventor_to_details[row['inventor_id']] = details
     
 for row in inventor_gender:
-    details = inventor_to_details.get(row['disamb_inventor_id_20200331'])
+    details = inventor_to_details.get(row['disambig_inventor_id_20200630'])
     if details:
         details[3] = row['male'] #0 is female, 1 is male
-        inventor_to_details[row['disamb_inventor_id_20200331']] = details
+        inventor_to_details[row['disambig_inventor_id_20200630']] = details
 
 # Load location
 location_file = open('../patent_data/location.tsv', encoding='utf-8-sig')

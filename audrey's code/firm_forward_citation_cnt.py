@@ -41,7 +41,7 @@ with open('../outputs/firm_forward_citation_cnt.csv', 'w',
     output.writerow(header)
     
     # Keep track of current state 
-    nxt = citations.__next__()
+    nxt = next(citations)
     count4, count5, count7 = 0, 0, 0
     
     # Iterate through firm_year_patentcnt
@@ -73,7 +73,7 @@ with open('../outputs/firm_forward_citation_cnt.csv', 'w',
             
             # Stop if we reach the end of the citations file
             try:
-                nxt = citations.__next__()
+                nxt = next(citations)
             except StopIteration:
                 break
         
