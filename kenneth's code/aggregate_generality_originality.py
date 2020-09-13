@@ -125,7 +125,7 @@ for key, value in innovation_dict.items():
 	if key in firm_year_forward_cite_dict:
 		fc4, fc5, fc7 = firm_year_forward_cite_dict[key]
 	else:
-		fc4, fc5, fc7 = (0,0,0)
+		fc4, fc5, fc7 = ('N/A','N/A','N/A')
 
 	patent_cnt, patent_ids = firm_year_patentcnt_dict[key]
 
