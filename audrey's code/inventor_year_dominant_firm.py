@@ -18,16 +18,16 @@ from collections import Counter
 print('***\nBEGIN PROCESS')
 start_time = time.ctime()
 
-# Load patent
-patent_file = open('../patent_data/patent.tsv', 
+# Load application
+app_file = open('../patent_data/application.tsv', 
                         encoding='utf-8-sig')
-patent = csv.DictReader(patent_file, delimiter='\t') 
+application = csv.DictReader(app_file, delimiter='\t') 
     
 # Create patent to year dictionary
 print('Creating year dict\n...')
 patent_to_year = {}
-for row in patent:
-    patent_to_year[row['number']] = int(row['date'][:4])
+for row in application:
+    patent_to_year[row['patent_id']] = int(row['date'][:4])
 
 # Load inventor_year_patents
 inventor_patents_file = open('../outputs/inventor_patent.csv', 
@@ -63,6 +63,8 @@ curr_inv = next(inventor_patents)['inventor_id']
 inventor_patents_file.seek(0)
 next(inventor_patents)
 
+this_year = 2020
+
 # Create output file
 print('WRITING TO FILE\n')
 with open('../outputs/inventor_year_dominant_firm.csv', 'w', 
@@ -79,7 +81,7 @@ with open('../outputs/inventor_year_dominant_firm.csv', 'w',
         if not row['inventor_id'] == curr_inv:
             if year_assignee:
                 start = min(year_assignee)
-                for i in range(start, 2021):
+                for i in range(start, this_year + 1):
                     if i in year_assignee:
                         firm_freq = Counter(year_assignee[i])
                         dominant = firm_freq.most_common(1)[0][0];
@@ -98,15 +100,15 @@ with open('../outputs/inventor_year_dominant_firm.csv', 'w',
             firm = assignee_id_to_name.get(row['assignee_id'], 'N/A')
         
         # Track year
-        year = int(patent_to_year.get(row['patent_id'], 3000))
-        if year < 2020:
+        year = int(patent_to_year.get(row['patent_id'], this_year + 1))
+        if year < this_year:
             assignee_in_year = year_assignee.get(year, [])
             assignee_in_year.append(firm)
             year_assignee[year] = assignee_in_year
 
     if year_assignee:
         start = min(year_assignee)
-        for i in range(start, 2021):
+        for i in range(start, this_year + 1):
             if i in year_assignee:
                 firm_freq = Counter(year_assignee[i])
                 dominant = firm_freq.most_common(1)[0];

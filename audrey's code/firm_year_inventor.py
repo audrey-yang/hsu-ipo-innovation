@@ -38,6 +38,10 @@ patent_inventor_file = open('../patent_data/patent_inventor.tsv',
                             encoding='utf-8-sig')
 patent_inventor = csv.DictReader(patent_inventor_file, delimiter='\t')
 
+# Create inventor to details dictionary
+print('Creating patent to details dict\n...')
+inventor_to_details = {} #id -> [name_last, name_first, location_id, male]
+
 # Create patent to inventor dictionary
 print('Creating patent to inventor dict\n...')
 patent_to_inventors = {}
@@ -51,46 +55,43 @@ for row in patent_inventor:
     patent_lst.append(row['patent_id'])
     inventor_to_patents[row['inventor_id']] = patent_lst
     
+    # Get location id
+    details = inventor_to_details.get(row['inventor_id'], [None] * 4)
+    lst = details[2]
+    if not lst:
+        lst = []
+    lst.append(row['location_id'])
+    details[2] = lst
+    inventor_to_details[row['inventor_id']] = details
+    
 # Load inventor
 inventor_file = open('../patent_data/inventor.tsv', encoding='utf-8-sig')
 inventor = csv.DictReader(inventor_file, delimiter='\t')
-
-# Load location_inventor
-location_inventor_file = open('../patent_data/location_inventor.tsv', 
-encoding='utf-8-sig')
-location_inventor = csv.DictReader(location_inventor_file, delimiter='\t')
 
 # Load inventor_gender
 inventor_gender_file = open('../patent_data/inventor_gender.tsv', 
                             encoding='utf-8-sig')
 inventor_gender = csv.DictReader(inventor_gender_file, delimiter='\t')
 
-# Create inventor to details dictionary
-print('Creating patent to details dict\n...')
-inventor_to_details = {} #id -> [name_last, name_first, location_id, male]
+# Continue inventor to details dictionary
+print('Continue creating patent to details dict\n...')
 for row in inventor:
-    inventor_to_details[row['id']] = [
+    if row['id'] in inventor_to_details:
+        inventor_to_details[row['id']][0] = row['name_last']
+        inventor_to_details[row['id']][1] = row['name_first']
+    else:
+        inventor_to_details[row['id']] = [
                 row['name_last'], 
                 row['name_first'], 
                 None, 
                 None
             ]
-
-for row in location_inventor:
-    details = inventor_to_details.get(row['inventor_id'])
-    if details:
-        lst = details[2]
-        if not lst:
-            lst = []
-        lst.append(row['location_id'])
-        details[2] = lst
-        inventor_to_details[row['inventor_id']] = details
     
 for row in inventor_gender:
-    details = inventor_to_details.get(row['disambig_inventor_id_20200630'])
+    details = inventor_to_details.get(row['disamb_inventor_id_20200929'])
     if details:
         details[3] = row['male'] #0 is female, 1 is male
-        inventor_to_details[row['disambig_inventor_id_20200630']] = details
+        inventor_to_details[row['disamb_inventor_id_20200929']] = details
 
 # Load location
 location_file = open('../patent_data/location.tsv', encoding='utf-8-sig')
@@ -109,7 +110,7 @@ for row in location:
         ]
 
 # Load Kenneth table
-firm_year_patentcnt_file = open('../outputs/firm_year_patentcnt.csv', 
+firm_year_patentcnt_file = open('../outputs/firm_year_patentcnt_REVISED.csv', 
                             encoding='utf-8-sig')
 firm_year_patentcnt = csv.DictReader(firm_year_patentcnt_file, delimiter=',')
 
@@ -126,10 +127,13 @@ with open('../outputs/firm_year_inventor.csv', 'w',
     print('Writing to output file\n...')
     na4 = ['N/A'] * 4
     na5 = ['N/A'] * 5
+    i = 0
     for row in firm_year_patentcnt:
         for patent in row['patent_ids'].split('; '):
             for inventor in patent_to_inventors.get(patent, []):
                 inv_details = inventor_to_details.get(inventor, na4)
+                if i < 36:
+                    print(inventor, inv_details)
                 if inv_details[2]:
                     for loc in inv_details[2]:
                         loc_details = location_to_details.get(loc, na5)
@@ -148,7 +152,6 @@ with open('../outputs/firm_year_inventor.csv', 'w',
                                 loc_details[3],
                                 loc_details[4],
                             ])
-
 
 print('Creating output file 2 (inventor_patent)\n...')
 with open('../outputs/inventor_patent.csv', 'w', 

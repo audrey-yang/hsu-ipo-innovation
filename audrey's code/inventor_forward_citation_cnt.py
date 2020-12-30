@@ -42,7 +42,9 @@ with open('../outputs/inventor_forward_citation_cnt.csv', 'w',
     last_patent = ''
     count4, count5, count7 = 0, 0, 0
     
-    for row in citations:           
+    for row in citations: 
+        if not row['year'].isnumeric():
+            continue        
         if not (int(row['year']) == last_year and 
                 row['inventor_id'] == last_inventor):
             # Write to file

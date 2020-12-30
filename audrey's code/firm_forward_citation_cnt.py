@@ -20,11 +20,11 @@ print('***\nBEGIN PROCESS')
 start_time = time.ctime()
 
 # Load in firm_year_patentcnt.csv
-firm_year_patent_file = open('../outputs/firm_year_patentcnt.csv', 
+firm_year_patent_file = open('../outputs/firm_year_patentcnt_REVISED.csv', 
                              encoding='utf-8-sig')
 firm_year_patents = csv.DictReader(firm_year_patent_file, delimiter=',')
 
-# Load in citations_forward_backward.csv
+# Load in firm_year_patents.csv
 citations_file = open('../outputs/firm_year_patents.csv', 
                       encoding='utf-8-sig')
 citations = csv.DictReader(citations_file, delimiter=',')

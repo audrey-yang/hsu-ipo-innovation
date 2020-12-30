@@ -30,17 +30,17 @@ for row in cpc_current:
     if row['sequence'] == '0':
         patent_to_subsection[row['patent_id']] = row['subsection_id']
     
-# Load patent
-patent_file = open('../patent_data/patent.tsv', 
+# Load application
+app_file = open('../patent_data/application.tsv', 
                         encoding='utf-8-sig')
-patent = csv.DictReader(patent_file, delimiter='\t') 
+application = csv.DictReader(app_file, delimiter='\t') 
     
 # Create patent to year dictionary
 print('Creating year dict\n...')
 patent_to_year = {}
-for row in patent:
-    patent_to_year[row['number']] = int(row['date'][:4])
- 
+for row in application:
+    patent_to_year[row['patent_id']] = int(row['date'][:4])
+    
 # Load uspatentcitation
 uspatentcitation_file = open('../patent_data/uspatentcitation.tsv', 
                             encoding='utf-8-sig')
@@ -61,8 +61,8 @@ for row in uspatentcitation:
     
     # Adding to forward citations
     if row['date']:
-        if patent_to_year.get(row['patent_id'],  
-                              20000) - int(row['date'][:4]) <= year_range:
+        if (patent_to_year.get(row['patent_id'], 20000) - 
+                patent_to_year.get(row['citation_id'], 20000)) <= year_range:
             lstfw = patent_to_citationfw.get(row['citation_id'], [])
             lstfw.append(row['patent_id'])
             patent_to_citationfw[row['citation_id']] = lstfw

@@ -16,16 +16,16 @@ import csv
 print('***\nBEGIN PROCESS')
 start_time = time.ctime()
 
-# Load patent
-patent_file = open('../patent_data/patent.tsv', 
+# Load application
+app_file = open('../patent_data/application.tsv', 
                         encoding='utf-8-sig')
-patent = csv.DictReader(patent_file, delimiter='\t') 
+application = csv.DictReader(app_file, delimiter='\t') 
     
 # Create patent to year dictionary
 print('Creating year dict\n...')
 patent_to_year = {}
-for row in patent:
-    patent_to_year[row['number']] = int(row['date'][:4])
+for row in application:
+    patent_to_year[row['patent_id']] = int(row['date'][:4])
 
 # Load inventor_year_patents
 inventor_patents_file = open('../outputs/inventor_patent.csv', 
@@ -45,7 +45,7 @@ for row in assignee_firms:
         assignee_id_to_name[row['id']] = row['organization']
 
 # Load name_matches
-name_matches_file = open('../outputs/name_matches.csv', 
+name_matches_file = open('../outputs/name_matches_2.csv', 
                       encoding='utf-8-sig')
 name_matches = csv.DictReader(name_matches_file, delimiter=',')
 
@@ -53,7 +53,7 @@ name_matches = csv.DictReader(name_matches_file, delimiter=',')
 print('Creating assignee name to ipo name dict\n...')
 ipo_name = {}
 for row in name_matches:
-    ipo_name[row['assignee_firm']] = row['ipo_firm']
+    ipo_name[row['assignee_id']] = row['ipo_firm']
     
 # Get first inventor
 next(inventor_patents)
@@ -75,14 +75,15 @@ with open('../outputs/inventor_timeline.csv', 'w',
         # Write to file (first year -> this year)
         if not row['inventor_id'] == curr_inv:
             for assignee, year_range in assignee_year.items():
-                output.writerow([curr_inv, assignee] + year_range)
-                
+                output.writerow([curr_inv, assignee] + year_range) 
             curr_inv = row['inventor_id']
             assignee_year = {}
         
         # Track assignees
-        firm = assignee_id_to_name.get(row['assignee_id'], 'N/A')
-        ipo = ipo_name.get(firm, firm)
+        ipo = ipo_name.get(
+                row['assignee_id'], 
+                assignee_id_to_name.get(row['assignee_id'], 'N/A')
+        )
         year = patent_to_year.get(row['patent_id'])
         rng = assignee_year.get(ipo, [3000, 0])
         if year:
