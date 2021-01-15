@@ -64,12 +64,15 @@ generality7 = {} # contains data for patents 6 and 7 years into the future
 # Forward citations -> generality
 for row in fw_citations:
     # Track subsection_id -> freq
-    diff = int(row['citation_year']) - int(row['year'])
+    if not row['citation_app_year'].isnumeric() or not row['app_year'].isnumeric():
+        continue
+    diff = int(row['citation_app_year']) - int(row['app_year'])
     if diff <= 4:
         c = generality4.get(row['patent_id'], {})
         c[row['subsection_id']] = c.get(row['subsection_id'], 0) + 1
         generality4[row['patent_id']] = c
     elif diff <= 5:
+        
         c = generality5.get(row['patent_id'], {})
         c[row['subsection_id']] = c.get(row['subsection_id'], 0) + 1
         generality5[row['patent_id']] = c

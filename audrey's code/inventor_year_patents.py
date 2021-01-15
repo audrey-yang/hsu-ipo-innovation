@@ -5,9 +5,13 @@ Inventor + Year to Patents
 
 This script links inventors to their patents and those patents' citations.
 
-The files produced are outputs/inventor_year_patents_bk.csv and 
-outputs/inventor_year_patents_fw.csv, with header:
-    inventor_id, year, patent_id, citation_id, subsection_id
+The files produced are outputs/inventor_year_patents_bk.csv with header:
+    inventor_id, app_year, grant_year, 
+    patent_id, citation_id, subsection_id
+and outputs/inventor_year_patents_fw.csv with header:
+    inventor_id, app_year, grant_year, 
+    patent_id, citation_id, citation_app_year,
+    citation_grant_year, subsection_id
 
 @author: Audrey Yang (auyang@seas.upenn.edu)
 """
@@ -35,11 +39,24 @@ app_file = open('../patent_data/application.tsv',
                         encoding='utf-8-sig')
 application = csv.DictReader(app_file, delimiter='\t') 
     
-# Create patent to year dictionary
-print('Creating year dict\n...')
-patent_to_year = {}
+# Create application to year dictionary
+print('Creating application year dict and application to patent dict\n...')
+patent_to_app_year = {}
+app_to_patent = {}
 for row in application:
-    patent_to_year[row['patent_id']] = int(row['date'][:4])
+    patent_to_app_year[row['patent_id']] = int(row['date'][:4])
+    app_to_patent[row['number'][5:]] = row['patent_id']
+
+# Load patent
+patent_file = open('../patent_data/patent.tsv', 
+                        encoding='utf-8-sig')
+patent = csv.DictReader(patent_file, delimiter='\t') 
+    
+# Create patent to year dictionary
+print('Creating grant year dict\n...')
+patent_to_grant_year = {}
+for row in patent:
+    patent_to_grant_year[row['number']] = int(row['date'][:4])
     
 # Load uspatentcitation
 uspatentcitation_file = open('../patent_data/uspatentcitation.tsv', 
@@ -61,11 +78,27 @@ for row in uspatentcitation:
     
     # Adding to forward citations
     if row['date']:
-        if (patent_to_year.get(row['patent_id'], 20000) - 
-                patent_to_year.get(row['citation_id'], 20000)) <= year_range:
+        if (patent_to_app_year.get(row['patent_id'], 20000) - 
+                patent_to_app_year.get(row['citation_id'], 20000)) <= year_range:
             lstfw = patent_to_citationfw.get(row['citation_id'], [])
             lstfw.append(row['patent_id'])
             patent_to_citationfw[row['citation_id']] = lstfw
+
+# Load usapplicationcitation
+usappcitation_file = open('../patent_data/usapplicationcitation.tsv', 
+                                encoding='utf-8-sig')
+usappcitation = csv.DictReader(usappcitation_file, delimiter='\t')
+
+# Add application citations
+print('Adding application citation\n...')
+for row in usappcitation:
+    if row['date']:
+        cit = app_to_patent.get(row['number'][5:])
+        if cit and (patent_to_app_year.get(row['patent_id'], 20000) - 
+                patent_to_app_year.get(cit, 0)) <= year_range:
+            lstfw = patent_to_citationfw.get(cit, [])
+            lstfw.append(row['patent_id'])
+            patent_to_citationfw[cit] = lstfw
 
 # Load inventor_patent
 inventor_to_patent_file = open('../outputs/inventor_patent.csv', 
@@ -81,11 +114,12 @@ with open(
         encoding='utf-8-sig') as output_fw_file:
     output_bk = csv.writer(output_bk_file, delimiter=',')
     output_fw = csv.writer(output_fw_file, delimiter=',')
-    header_bk = ['inventor_id', 'year', 'patent_id', 'citation_id', 
-              'subsection_id']
+    header_bk = ['inventor_id', 'app_year', 'grant_year', 
+                'patent_id', 'citation_id', 'subsection_id']
     output_bk.writerow(header_bk)   
-    header_fw = ['inventor_id', 'year', 'patent_id', 'citation_id', 
-                 'citation_year', 'subsection_id']
+    header_fw = ['inventor_id', 'app_year', 'grant_year', 
+                'patent_id', 'citation_id', 'citation_app_year', 
+                'citation_grant_year', 'subsection_id']
     output_fw.writerow(header_fw)   
 
     for row in inventor_to_patent:
@@ -94,7 +128,8 @@ with open(
         for cit in patent_to_citationbk.get(patent, []):
             output_bk.writerow([
                 row['inventor_id'], 
-                patent_to_year.get(patent, 'N/A'),
+                patent_to_app_year.get(patent, 'N/A'),
+                patent_to_grant_year.get(patent, 'N/A'),
                 patent,
                 cit,
                 'Design' if cit[0] == 'D' else (
@@ -105,10 +140,12 @@ with open(
         for cit in patent_to_citationfw.get(patent, []):
             output_fw.writerow([
                 row['inventor_id'], 
-                patent_to_year.get(patent, 'N/A'),
+                patent_to_app_year.get(patent, 'N/A'),
+                patent_to_grant_year.get(patent, 'N/A'),
                 patent,
                 cit,
-                patent_to_year.get(cit, 'N/A'),
+                patent_to_app_year.get(cit, 'N/A'),
+                patent_to_grant_year.get(cit, 'N/A'),
                 'Design' if cit[0] == 'D' else (
                         patent_to_subsection.get(cit, 'N/A')),
             ]) 

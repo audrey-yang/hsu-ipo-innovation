@@ -127,13 +127,10 @@ with open('../outputs/firm_year_inventor.csv', 'w',
     print('Writing to output file\n...')
     na4 = ['N/A'] * 4
     na5 = ['N/A'] * 5
-    i = 0
     for row in firm_year_patentcnt:
         for patent in row['patent_ids'].split('; '):
             for inventor in patent_to_inventors.get(patent, []):
                 inv_details = inventor_to_details.get(inventor, na4)
-                if i < 36:
-                    print(inventor, inv_details)
                 if inv_details[2]:
                     for loc in inv_details[2]:
                         loc_details = location_to_details.get(loc, na5)

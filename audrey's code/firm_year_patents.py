@@ -56,7 +56,7 @@ patent_to_year = {}
 app_to_patent = {}
 for row in application:
     patent_to_year[row['patent_id']] = int(row['date'][:4])
-    app_to_patent[row['id']] = row['patent_id']
+    app_to_patent[row['number'][5:]] = row['patent_id']
 
 # Load uspatentcitation
 uspatentcitation_file = open('../patent_data/uspatentcitation.tsv', 
@@ -93,7 +93,7 @@ usappcitation = csv.DictReader(usappcitation_file, delimiter='\t')
 print('Adding application citation\n...')
 for row in usappcitation:
     if row['date']:
-        cit = app_to_patent.get(row['application_id'])
+        cit = app_to_patent.get(row['number'][5:])
         if cit and (patent_to_year.get(row['patent_id'], 20000) - 
                 patent_to_year.get(cit, 0)) <= year_range:
             lstfw = patent_to_citationfw.get(cit, [])

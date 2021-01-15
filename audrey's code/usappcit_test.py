@@ -9,7 +9,7 @@ application = csv.DictReader(app_file, delimiter='\t')
 print('Creating year dict and application to patent dict\n...')
 app_to_patent = {}
 for row in application:
-    app_to_patent[row['number']] = row['patent_id']
+    app_to_patent[row['number'][5:]] = row['patent_id']
 
 # Load usapplicationcitation
 usappcitation_file = open('../patent_data/usapplicationcitation.tsv', 
@@ -23,9 +23,11 @@ print('Adding application citation\n...')
 app_to_citationfw = {}
 for row in usappcitation:
     if row['date']:
-        cit = app_to_patent.get(row['application_id'])
+        cit = app_to_patent.get(row['number'][5:])
         if not cit:
             no_match += 1
+        else:
+            print(row['number'], row['number'][5:])
         row_cnt += 1
 
 print("Row count", row_cnt)
