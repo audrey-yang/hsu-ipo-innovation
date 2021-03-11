@@ -49,9 +49,11 @@ name_matches = csv.DictReader(name_matches_file, delimiter=',')
 
 # Create assignee id to ipo firm dict
 print('Creating assignee_id to ipo name dict\n...')
-ipo_name = {}
+ipo_id_to_name = {}
+ipo_name_to_name = {}
 for row in name_matches:
-    ipo_name[row['assignee_id']] = row['ipo_firm']
+    ipo_id_to_name[row['assignee_id']] = row['ipo_firm']
+    ipo_name_to_name[row['assignee_firm']] = row['ipo_firm']
 
 # Load inventor_year_patents_bk
 inventor_year_patents_file = open('../outputs/inventor_year_patents_bk.csv', 
@@ -59,11 +61,11 @@ inventor_year_patents_file = open('../outputs/inventor_year_patents_bk.csv',
 inventor_year_patents = csv.DictReader(inventor_year_patents_file, delimiter=',')
 
 # Create inventor to granted patent years dict
-print('Creating inventor to granted patent year dict\n...')
+print('Creating inventor to patent application year dict\n...')
 inventor_grant_patent = {}
 for row in inventor_year_patents:
     granted_years = inventor_grant_patent.get(row['inventor_id'], set())
-    granted_years.add(row['grant_year'])
+    granted_years.add(row['app_year'])
     inventor_grant_patent[row['inventor_id']] = granted_years
 
 # Load inventor_patents
@@ -137,10 +139,11 @@ with open('../outputs/inventor_year_dominant_firm.csv', 'w',
             year_assignee = {}
         
         # Track assignees
-        if row['assignee_id'] in ipo_name:
-            firm = ipo_name[row['assignee_id']]
+        if row['assignee_id'] in ipo_id_to_name:
+            firm = ipo_id_to_name[row['assignee_id']]
         else:
             firm = assignee_id_to_name.get(row['assignee_id'], 'N/A')
+            firm = ipo_name_to_name.get(firm, firm)
         
         # Track year
         year = int(patent_to_year.get(row['patent_id'], this_year))
