@@ -24,7 +24,8 @@ ipo_10000 = csv.DictReader(ipo_10000_file, delimiter=',')
 print('Creating IPO year dict\n...')
 firm_ipo_year = {}
 for row in ipo_10000:
-    firm_ipo_year['firm'] = int(row['ipo_date'][:4])
+    firm = row['ï»¿firm'].strip()
+    firm_ipo_year[firm] = int(row['ipo_date'][:4])
 
 # Load inventor_year_dominant_firm
 dominant_firm_file = open('../outputs/inventor_year_dominant_firm.csv', 
@@ -38,8 +39,6 @@ for row in dominant_firm:
     # Skip if N/A or non-ipo firm
     if (row['extrapolated_dominant_assignee'] == 'N/A' or
         row['extrapolated_dominant_assignee'] not in firm_ipo_year):
-        if row['extrapolated_dominant_assignee'] != 'N/A':
-            print(row['extrapolated_dominant_assignee'])
         continue
 
     # Get firms -> years
@@ -58,13 +57,21 @@ print('Writing to output file\n...')
 with open('../outputs/firm_year_inventor_cnt.csv', 'w', 
           newline='\n', encoding='utf-8-sig') as output_file:
     output = csv.writer(output_file, delimiter=',')
-    header = ['ipo_firm', 'year', 'num_inventors', 'loss', 'gain']
+    header = ['ipo_firm', 'year', 'num_inventors', 
+    'loss', 'gain', 'ipo_inventors_left', 'ipo_inventors_returned']
     output.writerow(header)
 
     for firm, years in firm_year_inventor.items():
         ipo_year = firm_ipo_year.get(firm)
         if not ipo_year: # Skip if non-ipo firm
             continue
+        while ipo_year not in years and ipo_year <= this_year:
+            ipo_year += 1
+
+        if ipo_year == this_year + 1:
+            print(firm)
+            continue    
+
         ipo_inventors = years[ipo_year]
         start = min(years.keys())
         output.writerow([firm, start, len(years[start]), 0, 0])
