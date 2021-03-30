@@ -61,7 +61,7 @@ for row in citations:
                 generality7[row['patent_id']] = c
                 
 # Load Kenneth table
-firm_year_patentcnt_file = open('../outputs/firm_year_patentcnt.csv', 
+firm_year_patentcnt_file = open('../outputs/firm_year_patentcnt_REVISED.csv', 
                             encoding='utf-8-sig')
 firm_year_patentcnt = csv.DictReader(firm_year_patentcnt_file, delimiter=',')
   

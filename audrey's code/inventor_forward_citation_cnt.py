@@ -24,7 +24,7 @@ citations_file = open('../outputs/inventor_year_patents_fw.csv',
                       encoding='utf-8-sig')
 citations = csv.DictReader(citations_file, delimiter=',')
 
-this_year = 2020
+this_year = 2021
 
 # Create output file
 print('WRITING TO FILE\n...')
@@ -34,16 +34,17 @@ with open('../outputs/inventor_forward_citation_cnt.csv', 'w',
     header = ['inventor', 'year', 'forward_cnt4', 'forward_cnt5', 
               'forward_cnt7']
     output.writerow(header)
-    '''['inventor_id', 'year', 'patent_id', 'citation_id', 
-                 'citation_year', 'subsection_id']'''
+
     # Keep track of current state 
     last_year = 0
     last_inventor = ''
     last_patent = ''
     count4, count5, count7 = 0, 0, 0
     
-    for row in citations:           
-        if not (int(row['year']) == last_year and 
+    for row in citations: 
+        if not row['app_year'].isnumeric():
+            continue        
+        if not (int(row['app_year']) == last_year and 
                 row['inventor_id'] == last_inventor):
             # Write to file
             if last_year:
@@ -81,12 +82,12 @@ with open('../outputs/inventor_forward_citation_cnt.csv', 'w',
                         ])
 
             # Reset + update
-            last_year = int(row['year'])
+            last_year = int(row['app_year'])
             last_inventor = row['inventor_id']
             count4, count5, count7 = 0, 0, 0
             
-        curr = int(row['citation_year']) if (not 
-                  row['citation_year'] == 'N/A') else 20000
+        curr = int(row['citation_app_year']) if (not 
+                  row['citation_app_year'] == 'N/A') else 20000
         if curr - last_year <= 4:
             count4 += 1
         if curr - last_year <= 5:

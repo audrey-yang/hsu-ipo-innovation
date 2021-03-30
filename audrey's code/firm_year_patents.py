@@ -6,7 +6,7 @@ Firm + Year to Patents
 This script aggregates all backward and forward citations for each patent 
 and firm in firm_year_patentcnt.
 
-The file produced is outputs/citations_forward_backward.csv, with header:
+The file produced is outputs/firm_year_patents.csv, with header:
     ipo_firm, assignee_patent, patent_id, date_patent, assignee_citation,
     citation_id, date_citation, subsection_id, group_id, sequence, citation_type
     
@@ -45,16 +45,18 @@ for row in cpc_current:
     lst.append([row['subsection_id'], row['group_id'], row['sequence']])
     patent_to_subsection[row['patent_id']] = lst
 
-# Load patent
-patent_file = open('../patent_data/patent.tsv', 
+# Load application
+app_file = open('../patent_data/application.tsv', 
                         encoding='utf-8-sig')
-patent = csv.DictReader(patent_file, delimiter='\t') 
+application = csv.DictReader(app_file, delimiter='\t') 
     
 # Create patent to year dictionary
-print('Creating year dict\n...')
+print('Creating year dict and application to patent dict\n...')
 patent_to_year = {}
-for row in patent:
-    patent_to_year[row['number']] = int(row['date'][:4])
+app_to_patent = {}
+for row in application:
+    patent_to_year[row['patent_id']] = int(row['date'][:4])
+    app_to_patent[row['number'][5:]] = row['patent_id']
 
 # Load uspatentcitation
 uspatentcitation_file = open('../patent_data/uspatentcitation.tsv', 
@@ -65,7 +67,7 @@ uspatentcitation = csv.DictReader(uspatentcitation_file, delimiter='\t')
 year_range = 7
 
 # Create patent to citation dictionary, fw and bk
-print('Creating citations dict\n...')
+print('Creating patent citations dict\n...')
 patent_to_citationbk = {}
 patent_to_citationfw = {}
 for row in uspatentcitation:
@@ -76,14 +78,30 @@ for row in uspatentcitation:
     
     # Adding to forward citations
     if row['date']:
-        if patent_to_year.get(row['patent_id'],  
-                              20000) - int(row['date'][:4]) <= year_range:
+        if (patent_to_year.get(row['patent_id'], 20000) - 
+                patent_to_year.get(row['citation_id'], 0)) <= year_range:
             lstfw = patent_to_citationfw.get(row['citation_id'], [])
             lstfw.append(row['patent_id'])
             patent_to_citationfw[row['citation_id']] = lstfw
 
+# Load usapplicationcitation
+usappcitation_file = open('../patent_data/usapplicationcitation.tsv', 
+                                encoding='utf-8-sig')
+usappcitation = csv.DictReader(usappcitation_file, delimiter='\t')
+
+# Add application citations
+print('Adding application citation\n...')
+for row in usappcitation:
+    if row['date']:
+        cit = app_to_patent.get(row['number'][5:])
+        if cit and (patent_to_year.get(row['patent_id'], 20000) - 
+                patent_to_year.get(cit, 0)) <= year_range:
+            lstfw = patent_to_citationfw.get(cit, [])
+            lstfw.append(row['patent_id'])
+            patent_to_citationfw[cit] = lstfw
+
 # Load Kenneth table
-firm_year_patentcnt_file = open('../outputs/firm_year_patentcnt.csv', 
+firm_year_patentcnt_file = open('../outputs/firm_year_patentcnt_REVISED.csv', 
                             encoding='utf-8-sig')
 firm_year_patentcnt = csv.DictReader(firm_year_patentcnt_file, delimiter=',')
 
